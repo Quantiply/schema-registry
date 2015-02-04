@@ -131,11 +131,11 @@ public class RestApiTest extends ClusterTestHarness {
     TestUtils.changeCompatibility(restApp.restConnect, NONE, subject);
 
     TestUtils.registerSchema(restApp.restConnect, allSchemas.get(0), subject);
-    numRegisteredSchemas ++;
-    
+    numRegisteredSchemas++;
+
     // test compatibility of this schema against the latest version under the subject
     String schema1 = allSchemas.get(0);
-    boolean isCompatible = 
+    boolean isCompatible =
         TestUtils.testCompatibility(restApp.restConnect, schema1, subject, "latest");
     assertTrue("First schema registered should be compatible", isCompatible);
 
@@ -176,7 +176,7 @@ public class RestApiTest extends ClusterTestHarness {
     int versionOfRegisteredSchema =
         TestUtils.lookUpSubjectVersion(restApp.restConnect, schema1, subject).getVersion();
     boolean isCompatible = TestUtils.testCompatibility(restApp.restConnect, schema2, subject,
-                                  String.valueOf(versionOfRegisteredSchema));
+                                                       String.valueOf(versionOfRegisteredSchema));
     assertFalse("Schema should be incompatible with specified version", isCompatible);
   }
 
@@ -327,7 +327,7 @@ public class RestApiTest extends ClusterTestHarness {
                    rce.getStatus());
     }    
   }
-  
+
   @Test
   public void testGetVersionNonExistentSubject() throws Exception {
     // test getVersion on a non-existing subject
@@ -341,7 +341,7 @@ public class RestApiTest extends ClusterTestHarness {
                    e.getErrorCode());
     }
   }
-  
+
   @Test
   public void testGetNonExistingVersion() throws Exception {
     // test getVersion on a non-existing version
@@ -385,7 +385,7 @@ public class RestApiTest extends ClusterTestHarness {
       assertEquals("Subject not found", 40401, rce.getErrorCode());
     }
   }
-  
+
   @Test
   public void testLookUpNonExistentSchemaUnderSubject() throws Exception {
     String subject = "test";
@@ -399,7 +399,7 @@ public class RestApiTest extends ClusterTestHarness {
       assertEquals("Schema not found", 40403, rce.getErrorCode());
     }
   }
-  
+
   @Test
   public void testCompatibilityNonExistentSubject() throws Exception {
     String schema = TestUtils.getRandomCanonicalAvroString(1).get(0);

@@ -28,10 +28,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
-import javax.ws.rs.core.Response;
 
 import io.confluent.kafka.schemaregistry.client.rest.Versions;
 import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
@@ -40,7 +38,6 @@ import io.confluent.kafka.schemaregistry.client.rest.entities.requests.RegisterS
 import io.confluent.kafka.schemaregistry.rest.VersionId;
 import io.confluent.kafka.schemaregistry.rest.exceptions.Errors;
 import io.confluent.kafka.schemaregistry.storage.KafkaSchemaRegistry;
-import io.confluent.kafka.schemaregistry.storage.exceptions.SchemaRegistryException;
 import io.confluent.rest.annotations.PerformanceMetric;
 
 @Path("/compatibility")
@@ -76,29 +73,26 @@ public class CompatibilityResource {
     headerProperties.put("Accept", accept);
     boolean isCompatible = false;
     CompatibilityCheckResponse compatibilityCheckResponse = new CompatibilityCheckResponse();
-    try {
-      if (!schemaRegistry.listSubjects().contains(subject)) {
-        throw Errors.subjectNotFoundException();
-      }
-      Schema schemaForSpecifiedVersion = null;
-      VersionId versionId = new VersionId(version);
-      schemaForSpecifiedVersion = schemaRegistry.get(subject, versionId.getVersionId());
-      if (schemaForSpecifiedVersion == null) {
-        if (versionId.isLatest()) {
-          isCompatible = true;
-          compatibilityCheckResponse.setIsCompatible(isCompatible);
-          asyncResponse.resume(compatibilityCheckResponse);
-        } else {
-          throw Errors.versionNotFoundException();
-        }
-      } else {
-        isCompatible = schemaRegistry
-            .isCompatible(subject, request.getSchema(), schemaForSpecifiedVersion.getSchema());
+    if (!schemaRegistry.listSubjects().contains(subject)) {
+      throw Errors.subjectNotFoundException();
+    }
+    Schema schemaForSpecifiedVersion = null;
+    VersionId versionId = new VersionId(version);
+    schemaForSpecifiedVersion = schemaRegistry.get(subject, versionId.getVersionId());
+    if (schemaForSpecifiedVersion == null) {
+      if (versionId.isLatest()) {
+        isCompatible = true;
         compatibilityCheckResponse.setIsCompatible(isCompatible);
         asyncResponse.resume(compatibilityCheckResponse);
+      } else {
+        throw Errors.versionNotFoundException();
       }
-    } catch (SchemaRegistryException e) {
-      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR, e);
+    } else {
+      isCompatible =
+          schemaRegistry
+              .isCompatible(subject, request.getSchema(), schemaForSpecifiedVersion.getSchema());
+      compatibilityCheckResponse.setIsCompatible(isCompatible);
+      asyncResponse.resume(compatibilityCheckResponse);
     }
   }
 }

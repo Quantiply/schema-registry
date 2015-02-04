@@ -60,7 +60,6 @@ import io.confluent.kafka.schemaregistry.storage.exceptions.SchemaRegistryStoreT
 import io.confluent.kafka.schemaregistry.storage.exceptions.StoreException;
 import io.confluent.kafka.schemaregistry.storage.exceptions.StoreInitializationException;
 import io.confluent.kafka.schemaregistry.storage.exceptions.StoreTimedOutException;
-import io.confluent.kafka.schemaregistry.storage.exceptions.UnknownMasterException;
 import io.confluent.kafka.schemaregistry.storage.serialization.Serializer;
 import io.confluent.kafka.schemaregistry.storage.serialization.ZkStringSerializer;
 import io.confluent.kafka.schemaregistry.client.rest.utils.RestUtils;
@@ -87,11 +86,11 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
   private final Object masterLock = new Object();
   private final AvroCompatibilityLevel defaultCompatibilityLevel;
   private final ZkClient zkClient;
+  private final Metrics metrics;
   private SchemaRegistryIdentity masterIdentity;
   private ZookeeperMasterElector masterElector = null;
   private AtomicInteger schemaIdCounter;
   private int maxSchemaIdCounterValue;
-  private final Metrics metrics;
   private Sensor masterNodeSensor;
 
   public KafkaSchemaRegistry(SchemaRegistryConfig config,
@@ -119,18 +118,19 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
                                                                zkClient);
     MetricConfig metricConfig =
         new MetricConfig().samples(config.getInt(ProducerConfig.METRICS_NUM_SAMPLES_CONFIG))
-        .timeWindow(config.getLong(ProducerConfig.METRICS_SAMPLE_WINDOW_MS_CONFIG),
-                    TimeUnit.MILLISECONDS);
-    List<MetricsReporter> reporters = config.getConfiguredInstances(ProducerConfig.METRIC_REPORTER_CLASSES_CONFIG,
-                                                                    MetricsReporter.class);
+            .timeWindow(config.getLong(ProducerConfig.METRICS_SAMPLE_WINDOW_MS_CONFIG),
+                        TimeUnit.MILLISECONDS);
+    List<MetricsReporter> reporters =
+        config.getConfiguredInstances(ProducerConfig.METRIC_REPORTER_CLASSES_CONFIG,
+                                      MetricsReporter.class);
     String jmxPrefix = "kafka.schema.registry";
     reporters.add(new JmxReporter(jmxPrefix));
     this.metrics = new Metrics(metricConfig, reporters, new SystemTime());
     this.masterNodeSensor = metrics.sensor("master-slave-role");
     MetricName
-        m = new MetricName("master-slave-role", "master-slave-role", 
-                           "1.0 indicates the node is the active master in the cluster and is the" 
-                           + " node where all register schema and config update requests are " 
+        m = new MetricName("master-slave-role", "master-slave-role",
+                           "1.0 indicates the node is the active master in the cluster and is the"
+                           + " node where all register schema and config update requests are "
                            + "served.");
     this.masterNodeSensor.add(m, new Gauge());
   }
@@ -243,14 +243,14 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
       }
     } catch (StoreException e) {
       throw new SchemaRegistryStoreException("Error while registering the schema in the" +
-                                        " backend Kafka store", e);
+                                             " backend Kafka store", e);
     }
   }
 
   public int registerOrForward(String subject,
                                Schema schema,
                                Map<String, String> headerProperties)
-      throws UnknownMasterException, SchemaRegistryException {
+      throws SchemaRegistryException {
     synchronized (masterLock) {
       if (isMaster()) {
         return register(subject, schema);
@@ -270,7 +270,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
 
   public Schema lookUpSchemaUnderSubjectOrForward(
       String subject, Schema schema, Map<String, String> headerProperties)
-  throws SchemaRegistryException {
+      throws SchemaRegistryException {
     synchronized (masterLock) {
       if (isMaster()) {
         return lookUpSchemaUnderSubject(subject, schema);
@@ -294,7 +294,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
    */
   public Schema lookUpSchemaUnderSubject(
       String subject, Schema schema)
-  throws SchemaRegistryException {
+      throws SchemaRegistryException {
     // see if the schema to be registered already exists
     MD5 md5 = MD5.ofString(schema.getSchema());
     if (this.schemaHashToGuid.containsKey(md5)) {
@@ -316,8 +316,8 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
   }
 
   /**
-   * Allocate and lock the next batch of ids. Indicate a lock over the next batch by writing
-   * the upper bound of the batch to zookeeper.
+   * Allocate and lock the next batch of ids. Indicate a lock over the next batch by writing the
+   * upper bound of the batch to zookeeper.
    *
    * Return the start index of the next batch.
    */
@@ -338,9 +338,10 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
       if (counterValue.getData() != null) {
         schemaIdCounterThreshold = Integer.valueOf(counterValue.getData());
       } else {
-        throw new SchemaRegistryStoreException("Failed to initialize schema registry. Failed to read "
-                                          + "schema id counter " + ZOOKEEPER_SCHEMA_ID_COUNTER +
-                                          " from zookeeper");
+        throw new SchemaRegistryStoreException(
+            "Failed to initialize schema registry. Failed to read "
+            + "schema id counter " + ZOOKEEPER_SCHEMA_ID_COUNTER +
+            " from zookeeper");
       }
 
       // conditionally update the zookeeper path
@@ -353,13 +354,15 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
       // determined to be the zombie master.
       // NOTE: The handling of multiple masters is still a TODO
       newSchemaIdCounterDataVersion = ZkUtils.conditionalUpdatePersistentPath(zkClient,
-                                                  ZOOKEEPER_SCHEMA_ID_COUNTER,
-                                                  newCounterValue,
-                                                  counterValue.getStat().getVersion(),
-                                                  null);
+                                                                              ZOOKEEPER_SCHEMA_ID_COUNTER,
+                                                                              newCounterValue,
+                                                                              counterValue.getStat()
+                                                                                  .getVersion(),
+                                                                              null);
       try {
         Thread.sleep(ZOOKEEPER_SCHEMA_ID_COUNTER_BATCH_WRITE_RETRY_BACKOFF_MS);
-      } catch (InterruptedException ignored) { }
+      } catch (InterruptedException ignored) {
+      }
     }
     return schemaIdCounterThreshold;
   }
@@ -442,7 +445,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
   public SchemaString get(int id) throws SchemaRegistryStoreException {
     SchemaValue schema = null;
     try {
-      SchemaKey subjectVersionKey = guidToSchemaKey.get(id);      
+      SchemaKey subjectVersionKey = guidToSchemaKey.get(id);
       if (subjectVersionKey == null) {
         return null;
       }
@@ -533,7 +536,8 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
           log.debug("Wrote new compatibility level: " + newCompatibilityLevel.name + " to the"
                     + " Kafka data store with key " + configKey.toString());
         } catch (StoreException e) {
-          throw new SchemaRegistryStoreException("Failed to write new config value to the store", e);
+          throw new SchemaRegistryStoreException("Failed to write new config value to the store",
+                                                 e);
         }
       } else {
         // TODO: logic to forward will be included as part of issue#96
@@ -566,7 +570,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
   public boolean isCompatible(String subject,
                               String newSchemaObj,
                               String latestSchema)
-  throws InvalidAvroException {
+      throws InvalidAvroException {
     AvroSchema newAvroSchema = AvroUtils.parseSchema(newSchemaObj);
     AvroSchema latestAvroSchema = AvroUtils.parseSchema(latestSchema);
     if (latestSchema == null) {

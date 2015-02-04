@@ -59,8 +59,8 @@ public class ConfigResource {
   public void updateSubjectLevelConfig(@PathParam("subject") String subject,
                                        ConfigUpdateRequest request) {
     if (request != null) {
+      Set<String> subjects = schemaRegistry.listSubjects();
       try {
-        Set<String> subjects = schemaRegistry.listSubjects();
         AvroCompatibilityLevel compatibilityLevel =
             AvroCompatibilityLevel.forName(request.getCompatibilityLevel());
         if (compatibilityLevel == null) {
