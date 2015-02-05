@@ -29,7 +29,6 @@ import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientExcept
 import io.confluent.kafka.schemaregistry.client.rest.utils.RestUtils;
 import io.confluent.kafka.schemaregistry.rest.exceptions.Errors;
 import io.confluent.kafka.schemaregistry.rest.exceptions.RestInvalidVersionException;
-import io.confluent.kafka.schemaregistry.utils.RestUtils;
 import io.confluent.kafka.schemaregistry.utils.TestUtils;
 
 import static io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel.FORWARD;
@@ -65,7 +64,7 @@ public class RestApiTest extends ClusterTestHarness {
       fail("Getting all versions from non-existing subject1 should throw a 404");
     } catch (RestClientException rce) {
       assertEquals("Getting all versions from non-existing subject1 should throw a 404",
-                   Response.Status.NOT_FOUND.getStatusCode(),
+                   Errors.SUBJECT_NOT_FOUND_ERROR_CODE,
                    rce.getStatus());
     }
 
