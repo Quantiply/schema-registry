@@ -18,36 +18,35 @@ package io.confluent.kafka.schemaregistry.storage;
 import java.util.Iterator;
 import java.util.Set;
 
-import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
-import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaString;
-import io.confluent.kafka.schemaregistry.storage.exceptions.SchemaRegistryException;
+import io.confluent.kafka.schemaregistry.exceptions.InvalidSchemaException;
+import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryInitializationException;
+import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryStoreException;
+import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryTimeoutException;
+import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
 
 public interface SchemaRegistry {
 
-  void init() throws SchemaRegistryException;
+  void init() throws SchemaRegistryInitializationException, SchemaRegistryTimeoutException;
 
-  int register(String subject, Schema schema) throws SchemaRegistryException;
+  int register(String subject, Schema schema) throws SchemaRegistryStoreException,
+                                                     InvalidSchemaException,
+                                                     SchemaRegistryTimeoutException;
 
-  Schema get(String subject, int version) throws SchemaRegistryException;
+  Schema get(String subject, int version) throws SchemaRegistryStoreException;
 
-  SchemaString get(int id) throws SchemaRegistryException;
+  SchemaString get(int id) throws SchemaRegistryStoreException;
 
-  Set<String> listSubjects() throws SchemaRegistryException;
+  Set<String> listSubjects() throws SchemaRegistryStoreException;
 
-  Iterator<Schema> getAllVersions(String subject) throws SchemaRegistryException;
+  Iterator<Schema> getAllVersions(String subject) throws SchemaRegistryStoreException;
 
-  Schema getLatestVersion(String subject) throws SchemaRegistryException;
+  Schema getLatestVersion(String subject) throws SchemaRegistryStoreException;
 
-  boolean isCompatible(String subject,
-                       String inputSchema,
-                       String targetSchema) throws SchemaRegistryException;
-
-  void updateCompatibilityLevel(String subject, AvroCompatibilityLevel newCompatibilityLevel)
-      throws SchemaRegistryException;
-
-  AvroCompatibilityLevel getCompatibilityLevel(String subject)
-      throws SchemaRegistryException;
+  public boolean isCompatible(String subject,
+                              String inputSchema,
+                              String targetSchema)
+      throws InvalidSchemaException, SchemaRegistryStoreException;
 
   void close();
 }

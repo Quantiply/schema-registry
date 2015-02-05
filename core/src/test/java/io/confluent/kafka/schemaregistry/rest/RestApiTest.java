@@ -27,6 +27,9 @@ import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
 import io.confluent.kafka.schemaregistry.avro.AvroUtils;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.client.rest.utils.RestUtils;
+import io.confluent.kafka.schemaregistry.rest.exceptions.Errors;
+import io.confluent.kafka.schemaregistry.rest.exceptions.RestInvalidVersionException;
+import io.confluent.kafka.schemaregistry.utils.RestUtils;
 import io.confluent.kafka.schemaregistry.utils.TestUtils;
 
 import static io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel.FORWARD;
@@ -371,7 +374,7 @@ public class RestApiTest extends ClusterTestHarness {
     } catch (RestClientException e) {
       // this is expected.
       assertEquals("Invalid version shouldn't be found",
-                   Response.Status.BAD_REQUEST.getStatusCode(),
+                   RestInvalidVersionException.DEFAULT_ERROR_CODE,
                    e.getStatus());
     }
   }

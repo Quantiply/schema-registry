@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package io.confluent.kafka.schemaregistry.storage.exceptions;
+package io.confluent.kafka.schemaregistry.exceptions;
 
-public class StoreTimedOutException extends StoreException {
+public class SchemaRegistryRequestForwardingException extends SchemaRegistryException {
 
-  public StoreTimedOutException(String message) {
+  public SchemaRegistryRequestForwardingException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public SchemaRegistryRequestForwardingException(String message) {
     super(message);
   }
 
-  public StoreTimedOutException(String message, Throwable cause) {
-    super(message, cause);
+  public SchemaRegistryRequestForwardingException(Throwable cause) {
+    super(cause);
+  }
+
+  public SchemaRegistryRequestForwardingException() {
+    super();
   }
 }

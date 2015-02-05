@@ -1,5 +1,5 @@
-/**
- * Copyright 2014 Confluent Inc.
+/*
+ * Copyright 2015 Confluent Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.confluent.kafka.schemaregistry.rest.exceptions;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import io.confluent.rest.exceptions.RestServerErrorException;
 
-/**
- * An exception thrown when the registered schema is not a valid Avro schema.
- */
-public class InvalidAvroException extends WebApplicationException {
+public class RestRequestForwardingException extends RestServerErrorException {
 
-  public static final Response.Status STATUS = Response.Status.BAD_REQUEST;
+  private static final int ERROR_CODE = 50004;
 
-  public InvalidAvroException() {
-    super("The provided schema string is not a valid Avro schema", STATUS);
+  public RestRequestForwardingException(String message) {
+    super(message, ERROR_CODE);
+  }
+
+  public RestRequestForwardingException(String message, Throwable cause) {
+    super(message, ERROR_CODE, cause);
   }
 
   public InvalidAvroException(String message) {

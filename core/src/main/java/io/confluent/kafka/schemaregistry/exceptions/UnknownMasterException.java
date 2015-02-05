@@ -1,5 +1,5 @@
-/**
- * Copyright 2014 Confluent Inc.
+/*
+ * Copyright 2015 Confluent Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.confluent.kafka.schemaregistry.storage.exceptions;
 
-public class SchemaRegistryException extends Exception {
+package io.confluent.kafka.schemaregistry.exceptions;
 
-  public SchemaRegistryException(String message, Throwable cause) {
+public class UnknownMasterException extends SchemaRegistryException {
+
+  public UnknownMasterException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public SchemaRegistryException(String message) {
+  public UnknownMasterException(String message) {
     super(message);
   }
 
-  public SchemaRegistryException(Throwable cause) {
+  public UnknownMasterException(Throwable cause) {
     super(cause);
   }
 
-  public SchemaRegistryException() {
+  public UnknownMasterException() {
     super();
   }
 }
