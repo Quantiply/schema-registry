@@ -51,6 +51,7 @@ import io.confluent.kafka.schemaregistry.client.rest.entities.requests.RegisterS
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.client.rest.utils.RestUtils;
 import io.confluent.kafka.schemaregistry.exceptions.InvalidSchemaException;
+import io.confluent.kafka.schemaregistry.exceptions.InvalidVersionException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryInitializationException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryRequestForwardingException;
@@ -59,8 +60,6 @@ import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryTimeoutExcepti
 import io.confluent.kafka.schemaregistry.exceptions.UnknownMasterException;
 import io.confluent.kafka.schemaregistry.rest.SchemaRegistryConfig;
 import io.confluent.kafka.schemaregistry.rest.VersionId;
-import io.confluent.kafka.schemaregistry.rest.exceptions.IncompatibleAvroSchemaException;
-import io.confluent.kafka.schemaregistry.rest.exceptions.InvalidAvroException;
 import io.confluent.kafka.schemaregistry.rest.resources.SchemaIdAndSubjects;
 import io.confluent.kafka.schemaregistry.storage.exceptions.StoreException;
 import io.confluent.kafka.schemaregistry.storage.exceptions.StoreInitializationException;
@@ -353,8 +352,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
         schemaIdCounterThreshold = Integer.valueOf(counterValue.getData());
       } else {
         throw new SchemaRegistryStoreException(
-            "Failed to initialize schema registry. Failed to read "
-            + "schema id counter " + ZOOKEEPER_SCHEMA_ID_COUNTER +
+            "Failed to to read schema id counter " + ZOOKEEPER_SCHEMA_ID_COUNTER +
             " from zookeeper");
       }
 
@@ -437,7 +435,8 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
   }
 
   @Override
-  public Schema get(String subject, int version) throws SchemaRegistryStoreException {
+  public Schema get(String subject, int version)
+      throws SchemaRegistryStoreException, InvalidVersionException {
     VersionId versionId = new VersionId(version);
     if (versionId.isLatest()) {
       return getLatestVersion(subject);

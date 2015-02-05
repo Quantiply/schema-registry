@@ -314,7 +314,7 @@ public class RestApiTest extends ClusterTestHarness {
     } catch (RestClientException rce) {
       // this is expected.
       assertEquals("Should get a 404 status for non-existing id",
-                   404,
+                   Errors.SCHEMA_NOT_FOUND_ERROR_CODE,
                    rce.getStatus());
     }
   }
@@ -326,7 +326,7 @@ public class RestApiTest extends ClusterTestHarness {
     } catch (RestClientException rce) {
       // this is expected.
       assertEquals("Should get a 404 status for non-existing subject",
-                   404,
+                   Errors.SUBJECT_NOT_FOUND_ERROR_CODE,
                    rce.getStatus());
     }    
   }
@@ -340,7 +340,7 @@ public class RestApiTest extends ClusterTestHarness {
     } catch (RestClientException e) {
       // this is expected.
       assertEquals("Unregistered subject shouldn't be found in getVersion()",
-                   40401,
+                   Errors.SUBJECT_NOT_FOUND_ERROR_CODE,
                    e.getErrorCode());
     }
   }
@@ -357,7 +357,8 @@ public class RestApiTest extends ClusterTestHarness {
                            200);
     } catch (RestClientException e) {
       // this is expected.
-      assertEquals("Unregistered version shouldn't be found", 40402, e.getErrorCode());
+      assertEquals("Unregistered version shouldn't be found", 
+                   Errors.VERSION_NOT_FOUND_ERROR_CODE, e.getErrorCode());
     }
   }
 
@@ -385,7 +386,8 @@ public class RestApiTest extends ClusterTestHarness {
     try {
       TestUtils.lookUpSubjectVersion(restApp.restConnect, schema, "non-existent-subject");  
     } catch (RestClientException rce) {
-      assertEquals("Subject not found", 40401, rce.getErrorCode());
+      assertEquals("Subject not found", 
+                   Errors.SUBJECT_NOT_FOUND_ERROR_CODE, rce.getErrorCode());
     }
   }
 
@@ -399,7 +401,7 @@ public class RestApiTest extends ClusterTestHarness {
     try {
       TestUtils.lookUpSubjectVersion(restApp.restConnect, schemas.get(1), subject);
     } catch (RestClientException rce) {
-      assertEquals("Schema not found", 40403, rce.getErrorCode());
+      assertEquals("Schema not found", Errors.SCHEMA_NOT_FOUND_ERROR_CODE, rce.getErrorCode());
     }
   }
 
@@ -409,7 +411,7 @@ public class RestApiTest extends ClusterTestHarness {
     try {
       TestUtils.testCompatibility(restApp.restConnect, schema, "non-existent-subject", "latest");
     } catch (RestClientException rce) {
-      assertEquals("Subject not found", 40401, rce.getErrorCode());
+      assertEquals("Subject not found", Errors.SUBJECT_NOT_FOUND_ERROR_CODE, rce.getErrorCode());
     }
   }
 
@@ -421,7 +423,7 @@ public class RestApiTest extends ClusterTestHarness {
     try {
       TestUtils.testCompatibility(restApp.restConnect, schema, subject, "100");
     } catch (RestClientException rce) {
-      assertEquals("Version not found", 40402, rce.getErrorCode());
+      assertEquals("Version not found", Errors.VERSION_NOT_FOUND_ERROR_CODE, rce.getErrorCode());
     }
   }
 
@@ -434,7 +436,7 @@ public class RestApiTest extends ClusterTestHarness {
       TestUtils.testCompatibility(restApp.restConnect, schema, subject, "earliest");
     } catch (RestClientException rce) {
       assertEquals("Version not found",
-                   Response.Status.BAD_REQUEST.getStatusCode(),
+                   RestInvalidVersionException.DEFAULT_ERROR_CODE,
                    rce.getStatus());
     }
   }
