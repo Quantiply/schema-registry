@@ -34,8 +34,8 @@ import io.confluent.kafka.schemaregistry.client.rest.entities.Config;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.ConfigUpdateRequest;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryStoreException;
 import io.confluent.kafka.schemaregistry.exceptions.UnknownMasterException;
+import io.confluent.kafka.schemaregistry.rest.exceptions.Errors;
 import io.confluent.kafka.schemaregistry.rest.exceptions.InvalidCompatibilityException;
-import io.confluent.kafka.schemaregistry.rest.exceptions.RestSchemaRegistryStoreException;
 import io.confluent.kafka.schemaregistry.rest.exceptions.RestUnknownMasterException;
 import io.confluent.kafka.schemaregistry.storage.KafkaSchemaRegistry;
 
@@ -64,8 +64,8 @@ public class ConfigResource {
       try {
         subjects = schemaRegistry.listSubjects();
       } catch (SchemaRegistryStoreException e) {
-        throw new RestSchemaRegistryStoreException("Failed to retrieve a list of all subjects"
-                                                   + " from the registry", e);
+        throw Errors.storeException("Failed to retrieve a list of all subjects"
+                                    + " from the registry", e);
       }
       try {
         AvroCompatibilityLevel compatibilityLevel =
@@ -82,7 +82,7 @@ public class ConfigResource {
                     + request.getCompatibilityLevel());
         }
       } catch (SchemaRegistryStoreException e) {
-        throw new RestSchemaRegistryStoreException("Failed to update compatibility level", e);
+        throw Errors.storeException("Failed to update compatibility level", e);
       } catch (UnknownMasterException e) {
         throw new RestUnknownMasterException("Failed to update compatibility level", e);
       }
@@ -97,7 +97,7 @@ public class ConfigResource {
       AvroCompatibilityLevel compatibilityLevel = schemaRegistry.getCompatibilityLevel(subject);
       config = new Config(compatibilityLevel == null ? null : compatibilityLevel.name);
     } catch (SchemaRegistryStoreException e) {
-      throw new RestSchemaRegistryStoreException("Failed to get the configs for subject "
+      throw Errors.storeException("Failed to get the configs for subject "
                                                  + subject, e);
     }
     return config;
@@ -115,7 +115,7 @@ public class ConfigResource {
         schemaRegistry.updateCompatibilityLevel(null, compatibilityLevel);
         log.debug("Updated global compatibility level to " + request.getCompatibilityLevel());
       } catch (SchemaRegistryStoreException e) {
-        throw new RestSchemaRegistryStoreException("Failed to update compatibility level", e);
+        throw Errors.storeException("Failed to update compatibility level", e);
       } catch (UnknownMasterException e) {
         throw new RestUnknownMasterException("Failed to update compatibility level", e);
       }
@@ -129,7 +129,7 @@ public class ConfigResource {
       AvroCompatibilityLevel compatibilityLevel = schemaRegistry.getCompatibilityLevel(null);
       config = new Config(compatibilityLevel == null ? null : compatibilityLevel.name);
     } catch (SchemaRegistryStoreException e) {
-      throw new RestSchemaRegistryStoreException("Failed to get compatibility level", e);
+      throw Errors.storeException("Failed to get compatibility level", e);
     }
     return config;
   }
