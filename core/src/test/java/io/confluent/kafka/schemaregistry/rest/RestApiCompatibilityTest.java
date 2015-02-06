@@ -22,13 +22,8 @@ import io.confluent.kafka.schemaregistry.avro.AvroCompatibilityLevel;
 import io.confluent.kafka.schemaregistry.avro.AvroUtils;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.client.rest.utils.RestUtils;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.IncompatibleAvroSchemaException;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestInvalidAvroException;
-import io.confluent.kafka.schemaregistry.utils.RestUtils;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientInvalidAvroException;
-import io.confluent.kafka.schemaregistry.client.rest.utils.RestUtils;
 import io.confluent.kafka.schemaregistry.rest.exceptions.RestIncompatibleAvroSchemaException;
+import io.confluent.kafka.schemaregistry.rest.exceptions.RestInvalidSchemaException;
 import io.confluent.kafka.schemaregistry.utils.TestUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -82,8 +77,8 @@ public class RestApiCompatibilityTest extends ClusterTestHarness {
     } catch (RestClientException e) {
       // this is expected.
       assertEquals("Should get a bad request status",
-                   RestClientInvalidAvroException.STATUS,
-                   e.getStatus());
+                   RestInvalidSchemaException.ERROR_CODE,
+                   e.getErrorCode());
     }
 
     // register a backward compatible avro

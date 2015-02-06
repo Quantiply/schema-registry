@@ -33,12 +33,4 @@ public class RestRequestForwardingException extends RestServerErrorException {
   public RestRequestForwardingException(String message, Throwable cause) {
     super(message, ERROR_CODE, cause);
   }
-
-  public InvalidAvroException(String message) {
-    super(message, STATUS);
-  }
-
-  public InvalidAvroException(String message, Throwable cause) {
-    super(message, STATUS);
-  }
 }

@@ -44,8 +44,10 @@ import io.confluent.kafka.schemaregistry.exceptions.InvalidVersionException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryRequestForwardingException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryStoreException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryTimeoutException;
+import io.confluent.kafka.schemaregistry.exceptions.UnknownMasterException;
 import io.confluent.kafka.schemaregistry.rest.VersionId;
 import io.confluent.kafka.schemaregistry.rest.exceptions.Errors;
+import io.confluent.kafka.schemaregistry.rest.exceptions.RestUnknownMasterException;
 import io.confluent.kafka.schemaregistry.storage.KafkaSchemaRegistry;
 import io.confluent.rest.annotations.PerformanceMetric;
 
@@ -126,10 +128,6 @@ public class SubjectVersionsResource {
     return allVersions;
   }
 
-  /**
-   * @throws {@link io.confluent.kafka.schemaregistry.rest.exceptions.InvalidAvroException ,
-   *                io.confluent.kafka.schemaregistry.rest.exceptions.IncompatibleAvroSchemaException}
-   */
   @POST
   @PerformanceMetric("subjects.versions.register")
   public void register(final @Suspended AsyncResponse asyncResponse,
@@ -151,16 +149,18 @@ public class SubjectVersionsResource {
       throw Errors.operationTimeoutException("Register operation timed out", e);
     } catch (SchemaRegistryStoreException e) {
       throw Errors.storeException("Register schema operation failed while writing"
-                                                 + " to the Kafka store", e);
+                                  + " to the Kafka store", e);
     } catch (SchemaRegistryRequestForwardingException e) {
       throw Errors.schemaRegistryException("Error while forwarding register schema request"
-                                               + " to the master", e);
+                                           + " to the master", e);
       //TODO: Should be fixed as part of issue #66
 //      throw new RestRequestForwardingException("Error while forwarding register schema request"
 //                                               + " to the master", e);
     } catch (IncompatibleSchemaException e) {
-      throw Errors.incompatibleSchemaException("Schema being registered is incompatible with the" 
+      throw Errors.incompatibleSchemaException("Schema being registered is incompatible with the"
                                                + " latest schema", e);
+    } catch (UnknownMasterException e) {
+      throw new RestUnknownMasterException("Master not known.", e);
     }
     RegisterSchemaResponse registerSchemaResponse = new RegisterSchemaResponse();
     registerSchemaResponse.setId(id);

@@ -374,7 +374,7 @@ public class RestApiTest extends ClusterTestHarness {
     } catch (RestClientException e) {
       // this is expected.
       assertEquals("Invalid version shouldn't be found",
-                   RestInvalidVersionException.DEFAULT_ERROR_CODE,
+                   RestInvalidVersionException.ERROR_CODE,
                    e.getErrorCode());
     }
   }

@@ -48,6 +48,7 @@ import io.confluent.kafka.schemaregistry.avro.AvroUtils;
 import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaString;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.RegisterSchemaRequest;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.client.rest.utils.RestUtils;
 import io.confluent.kafka.schemaregistry.exceptions.IncompatibleSchemaException;
 import io.confluent.kafka.schemaregistry.exceptions.InvalidSchemaException;
@@ -309,8 +310,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
    * the schema under the subject. If not, returns -1
    */
   public Schema lookUpSchemaUnderSubject(
-      String subject, Schema schema)
-      throws SchemaRegistryException {
+      String subject, Schema schema) {
     // see if the schema to be registered already exists
     MD5 md5 = MD5.ofString(schema.getSchema());
     if (this.schemaHashToGuid.containsKey(md5)) {
@@ -406,7 +406,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
 
   private Schema forwardSubjectVersionRequestToMaster(
       String subject, String schemaString, String host, int port,
-      Map<String, String> headerProperties) throws SchemaRegistryException {
+      Map<String, String> headerProperties) throws SchemaRegistryRequestForwardingException {
     String baseUrl = String.format("http://%s:%d", host, port);
     RegisterSchemaRequest registerSchemaRequest = new RegisterSchemaRequest();
     registerSchemaRequest.setSchema(schemaString);
@@ -424,9 +424,10 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
           e);
     } catch (RestClientException e) {
       throw new RestException(e.getMessage(), e.getStatus(), e.getErrorCode(), e);
+      // TODO: Fix this
 //    } catch (RestClientException e) {
 //      throw new SchemaRegistryRequestForwardingException(e);
-//    }
+    }
   }
 
   private AvroSchema canonicalizeSchema(Schema schema) throws InvalidSchemaException {
