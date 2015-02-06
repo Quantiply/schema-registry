@@ -37,6 +37,7 @@ import io.confluent.kafka.schemaregistry.exceptions.UnknownMasterException;
 import io.confluent.kafka.schemaregistry.rest.exceptions.Errors;
 import io.confluent.kafka.schemaregistry.rest.exceptions.InvalidCompatibilityException;
 import io.confluent.kafka.schemaregistry.rest.exceptions.RestUnknownMasterException;
+import io.confluent.kafka.schemaregistry.rest.exceptions.RestInvalidCompatibilityException;
 import io.confluent.kafka.schemaregistry.storage.KafkaSchemaRegistry;
 
 @Path("/config")
@@ -67,24 +68,24 @@ public class ConfigResource {
         throw Errors.storeException("Failed to retrieve a list of all subjects"
                                     + " from the registry", e);
       }
+      AvroCompatibilityLevel compatibilityLevel =
+          AvroCompatibilityLevel.forName(request.getCompatibilityLevel());
+      if (compatibilityLevel == null) {
+        throw new RestInvalidCompatibilityException();
+      }
       try {
-        AvroCompatibilityLevel compatibilityLevel =
-            AvroCompatibilityLevel.forName(request.getCompatibilityLevel());
-        if (compatibilityLevel == null) {
-          throw new InvalidCompatibilityException();
-        }
         schemaRegistry.updateCompatibilityLevel(subject, compatibilityLevel);
-        if (!subjects.contains(subject)) {
-          log.debug("Updated compatibility level for unregistered subject " + subject + " to "
-                    + request.getCompatibilityLevel());
-        } else {
-          log.debug("Updated compatibility level for subject " + subject + " to "
-                    + request.getCompatibilityLevel());
-        }
       } catch (SchemaRegistryStoreException e) {
         throw Errors.storeException("Failed to update compatibility level", e);
       } catch (UnknownMasterException e) {
         throw new RestUnknownMasterException("Failed to update compatibility level", e);
+      }
+      if (!subjects.contains(subject)) {
+        log.debug("Updated compatibility level for unregistered subject " + subject + " to "
+                  + request.getCompatibilityLevel());
+      } else {
+        log.debug("Updated compatibility level for subject " + subject + " to "
+                  + request.getCompatibilityLevel());
       }
     }
   }
@@ -110,10 +111,9 @@ public class ConfigResource {
         AvroCompatibilityLevel compatibilityLevel =
             AvroCompatibilityLevel.forName(request.getCompatibilityLevel());
         if (compatibilityLevel == null) {
-          throw new InvalidCompatibilityException();
+          throw new RestInvalidCompatibilityException();
         }
         schemaRegistry.updateCompatibilityLevel(null, compatibilityLevel);
-        log.debug("Updated global compatibility level to " + request.getCompatibilityLevel());
       } catch (SchemaRegistryStoreException e) {
         throw Errors.storeException("Failed to update compatibility level", e);
       } catch (UnknownMasterException e) {

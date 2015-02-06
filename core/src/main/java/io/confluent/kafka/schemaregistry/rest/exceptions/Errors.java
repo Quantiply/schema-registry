@@ -16,7 +16,8 @@
 
 package io.confluent.kafka.schemaregistry.rest.exceptions;
 
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestInvalidAvroException;
+import javax.ws.rs.core.Response;
+
 import io.confluent.rest.exceptions.RestException;
 import io.confluent.rest.exceptions.RestNotFoundException;
 
@@ -29,6 +30,9 @@ public class Errors {
   public final static int VERSION_NOT_FOUND_ERROR_CODE = 40402;
   public final static String SCHEMA_NOT_FOUND_MESSAGE = "Schema not found";
   public final static int SCHEMA_NOT_FOUND_ERROR_CODE = 40403;
+
+  // HTTP 409
+  public static final int INCOMPATIBLE_SCHEMA_ERROR_CODE = Response.Status.CONFLICT.getStatusCode();
 
   // HTTP 422
   public static final int INVALID_SCHEMA_ERROR_CODE = 42201;
@@ -52,32 +56,39 @@ public class Errors {
   public static RestException schemaNotFoundException() {
     return new RestNotFoundException(SCHEMA_NOT_FOUND_MESSAGE, SCHEMA_NOT_FOUND_ERROR_CODE);
   }
-  
-  public static RestInvalidAvroException invalidAvroException(String message, Throwable cause) {
-    return new RestInvalidAvroException(message, cause);
+
+  public static RestIncompatibleAvroSchemaException incompatibleSchemaException(String message,
+                                                                                Throwable cause) {
+    return new RestIncompatibleAvroSchemaException(message,
+                                                   RestIncompatibleAvroSchemaException.DEFAULT_ERROR_CODE,
+                                                   cause);
   }
-  
+
+  public static RestInvalidSchemaException invalidAvroException(String message, Throwable cause) {
+    return new RestInvalidSchemaException(message);
+  }
+
   public static RestInvalidVersionException invalidVersionException() {
     return new RestInvalidVersionException();
   }
-  
+
   public static RestException schemaRegistryException(String message, Throwable cause) {
-    throw new RestSchemaRegistryException(message, cause);    
+    return new RestSchemaRegistryException(message, cause);
   }
-  
+
   public static RestException storeException(String message, Throwable cause) {
-    throw new RestSchemaRegistryStoreException(message, cause);    
+    return new RestSchemaRegistryStoreException(message, cause);
   }
 
   public static RestException operationTimeoutException(String message, Throwable cause) {
-    throw new RestSchemaRegistryTimeoutException(message, cause);
+    return new RestSchemaRegistryTimeoutException(message, cause);
   }
 
   public static RestException requestForwardingFailedException(String message, Throwable cause) {
-    throw new RestRequestForwardingException(message, cause);
+    return new RestRequestForwardingException(message, cause);
   }
 
   public static RestException unknownMasterException(String message, Throwable cause) {
-    throw new RestUnknownMasterException(message, cause);
+    return new RestUnknownMasterException(message, cause);
   }
 }

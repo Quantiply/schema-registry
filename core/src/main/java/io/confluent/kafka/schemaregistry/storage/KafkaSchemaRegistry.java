@@ -48,8 +48,8 @@ import io.confluent.kafka.schemaregistry.avro.AvroUtils;
 import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaString;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.RegisterSchemaRequest;
-import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
 import io.confluent.kafka.schemaregistry.client.rest.utils.RestUtils;
+import io.confluent.kafka.schemaregistry.exceptions.IncompatibleSchemaException;
 import io.confluent.kafka.schemaregistry.exceptions.InvalidSchemaException;
 import io.confluent.kafka.schemaregistry.exceptions.InvalidVersionException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryException;
@@ -202,7 +202,8 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
   @Override
   public int register(String subject,
                       Schema schema)
-      throws SchemaRegistryStoreException, InvalidSchemaException, SchemaRegistryTimeoutException {
+      throws SchemaRegistryStoreException, InvalidSchemaException, SchemaRegistryTimeoutException,
+             IncompatibleSchemaException {
     try {
       // see if the schema to be registered already exists
       AvroSchema avroSchema = canonicalizeSchema(schema);
@@ -249,7 +250,7 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
         kafkaStore.put(keyForNewVersion, schemaValue);
         return schema.getId();
       } else {
-        throw new IncompatibleAvroSchemaException(
+        throw new IncompatibleSchemaException(
             "New schema is incompatible with the latest schema " + latestSchema);
       }
     } catch (StoreTimeoutException te) {
@@ -264,7 +265,8 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
                                Schema schema,
                                Map<String, String> headerProperties)
       throws InvalidSchemaException, SchemaRegistryTimeoutException, SchemaRegistryStoreException,
-             SchemaRegistryRequestForwardingException, UnknownMasterException {
+             SchemaRegistryRequestForwardingException, IncompatibleSchemaException, 
+             UnknownMasterException {
     synchronized (masterLock) {
       if (isMaster()) {
         return register(subject, schema);
@@ -422,7 +424,9 @@ public class KafkaSchemaRegistry implements SchemaRegistry {
           e);
     } catch (RestClientException e) {
       throw new RestException(e.getMessage(), e.getStatus(), e.getErrorCode(), e);
-    }
+//    } catch (RestClientException e) {
+//      throw new SchemaRegistryRequestForwardingException(e);
+//    }
   }
 
   private AvroSchema canonicalizeSchema(Schema schema) throws InvalidSchemaException {

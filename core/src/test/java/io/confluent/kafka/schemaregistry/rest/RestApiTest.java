@@ -63,7 +63,7 @@ public class RestApiTest extends ClusterTestHarness {
                                subject1);
       fail("Getting all versions from non-existing subject1 should throw a 404");
     } catch (RestClientException rce) {
-      assertEquals("Getting all versions from non-existing subject1 should throw a 404",
+      assertEquals("Should get a 404 status for non-existing subject",
                    Errors.SUBJECT_NOT_FOUND_ERROR_CODE,
                    rce.getStatus());
     }

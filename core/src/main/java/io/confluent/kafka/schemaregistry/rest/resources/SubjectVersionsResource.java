@@ -38,6 +38,7 @@ import io.confluent.kafka.schemaregistry.client.rest.Versions;
 import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.RegisterSchemaRequest;
 import io.confluent.kafka.schemaregistry.client.rest.entities.requests.RegisterSchemaResponse;
+import io.confluent.kafka.schemaregistry.exceptions.IncompatibleSchemaException;
 import io.confluent.kafka.schemaregistry.exceptions.InvalidSchemaException;
 import io.confluent.kafka.schemaregistry.exceptions.InvalidVersionException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryRequestForwardingException;
@@ -157,6 +158,9 @@ public class SubjectVersionsResource {
       //TODO: Should be fixed as part of issue #66
 //      throw new RestRequestForwardingException("Error while forwarding register schema request"
 //                                               + " to the master", e);
+    } catch (IncompatibleSchemaException e) {
+      throw Errors.incompatibleSchemaException("Schema being registered is incompatible with the" 
+                                               + " latest schema", e);
     }
     RegisterSchemaResponse registerSchemaResponse = new RegisterSchemaResponse();
     registerSchemaResponse.setId(id);

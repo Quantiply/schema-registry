@@ -18,13 +18,14 @@ package io.confluent.kafka.schemaregistry.storage;
 import java.util.Iterator;
 import java.util.Set;
 
+import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaString;
+import io.confluent.kafka.schemaregistry.exceptions.IncompatibleSchemaException;
 import io.confluent.kafka.schemaregistry.exceptions.InvalidSchemaException;
 import io.confluent.kafka.schemaregistry.exceptions.InvalidVersionException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryInitializationException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryStoreException;
 import io.confluent.kafka.schemaregistry.exceptions.SchemaRegistryTimeoutException;
-import io.confluent.kafka.schemaregistry.client.rest.entities.Schema;
 
 public interface SchemaRegistry {
 
@@ -32,7 +33,8 @@ public interface SchemaRegistry {
 
   int register(String subject, Schema schema) throws SchemaRegistryStoreException,
                                                      InvalidSchemaException,
-                                                     SchemaRegistryTimeoutException;
+                                                     SchemaRegistryTimeoutException,
+                                                     IncompatibleSchemaException;
 
   Schema get(String subject, int version)
       throws SchemaRegistryStoreException, InvalidVersionException;
