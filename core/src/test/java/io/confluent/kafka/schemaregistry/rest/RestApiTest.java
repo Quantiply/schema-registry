@@ -65,7 +65,7 @@ public class RestApiTest extends ClusterTestHarness {
     } catch (RestClientException rce) {
       assertEquals("Should get a 404 status for non-existing subject",
                    Errors.SUBJECT_NOT_FOUND_ERROR_CODE,
-                   rce.getStatus());
+                   rce.getErrorCode());
     }
 
     // test getAllSubjects with no existing data
@@ -314,7 +314,7 @@ public class RestApiTest extends ClusterTestHarness {
       // this is expected.
       assertEquals("Should get a 404 status for non-existing id",
                    Errors.SCHEMA_NOT_FOUND_ERROR_CODE,
-                   rce.getStatus());
+                   rce.getErrorCode());
     }
   }
   
@@ -326,8 +326,8 @@ public class RestApiTest extends ClusterTestHarness {
       // this is expected.
       assertEquals("Should get a 404 status for non-existing subject",
                    Errors.SUBJECT_NOT_FOUND_ERROR_CODE,
-                   rce.getStatus());
-    }    
+                   rce.getErrorCode());
+    }
   }
 
   @Test
@@ -375,7 +375,7 @@ public class RestApiTest extends ClusterTestHarness {
       // this is expected.
       assertEquals("Invalid version shouldn't be found",
                    RestInvalidVersionException.DEFAULT_ERROR_CODE,
-                   e.getStatus());
+                   e.getErrorCode());
     }
   }
 
@@ -386,7 +386,8 @@ public class RestApiTest extends ClusterTestHarness {
       TestUtils.lookUpSubjectVersion(restApp.restConnect, schema, "non-existent-subject");  
     } catch (RestClientException rce) {
       assertEquals("Subject not found", 
-                   Errors.SUBJECT_NOT_FOUND_ERROR_CODE, rce.getErrorCode());
+                   Errors.SUBJECT_NOT_FOUND_ERROR_CODE, 
+                   rce.getErrorCode());
     }
   }
 
@@ -435,8 +436,8 @@ public class RestApiTest extends ClusterTestHarness {
       TestUtils.testCompatibility(restApp.restConnect, schema, subject, "earliest");
     } catch (RestClientException rce) {
       assertEquals("Version not found",
-                   RestInvalidVersionException.DEFAULT_ERROR_CODE,
-                   rce.getStatus());
+                   RestInvalidVersionException.ERROR_CODE,
+                   rce.getErrorCode());
     }
   }
 
@@ -449,7 +450,7 @@ public class RestApiTest extends ClusterTestHarness {
     } catch (RestClientException rce) {
       assertEquals("Subject not found",
                    Response.Status.NOT_FOUND.getStatusCode(),
-                   rce.getStatus());
+                   rce.getErrorCode());
     }
   }
 }
