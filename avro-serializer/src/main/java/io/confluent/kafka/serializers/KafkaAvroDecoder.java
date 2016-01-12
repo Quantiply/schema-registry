@@ -52,6 +52,7 @@ public class KafkaAvroDecoder extends AbstractKafkaAvroDeserializer implements D
 
   private void setProperties(VerifiableProperties props) {
     useSpecificAvroReader = props.getBoolean(SPECIFIC_AVRO_READER, false);
+    specificAvroReaderClassName = props.getString(SPECIFIC_AVRO_READER_CLASS, null);
   }
 
   @Override
