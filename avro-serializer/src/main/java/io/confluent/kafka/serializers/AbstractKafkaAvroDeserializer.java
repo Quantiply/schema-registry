@@ -87,6 +87,10 @@ public abstract class AbstractKafkaAvroDeserializer extends AbstractKafkaAvroSer
   }
 
   protected Object deserialize(byte[] payload) throws SerializationException {
+    return deserialize(payload, null);
+  }
+
+  protected Object deserialize(byte[] payload, Schema readerSchema) throws SerializationException {
     int id = -1;
     if (payload == null) {
       return null;
@@ -102,7 +106,7 @@ public abstract class AbstractKafkaAvroDeserializer extends AbstractKafkaAvroSer
         return bytes;
       }
       int start = buffer.position() + buffer.arrayOffset();
-      DatumReader reader = getDatumReader(schema);
+      DatumReader reader = getDatumReader(schema, readerSchema);
       Object object =
           reader.read(null, decoderFactory.binaryDecoder(buffer.array(), start, length, null));
 
@@ -120,9 +124,12 @@ public abstract class AbstractKafkaAvroDeserializer extends AbstractKafkaAvroSer
     }
   }
 
-  private DatumReader getDatumReader(Schema writerSchema) {
+  private DatumReader getDatumReader(Schema writerSchema, Schema readerSchema) {
     if (useSpecificAvroReader) {
-      return new SpecificDatumReader(writerSchema, getReaderSchema(writerSchema));
+      if (readerSchema == null) {
+        readerSchema = getReaderSchema(writerSchema);
+      }
+      return new SpecificDatumReader(writerSchema, readerSchema);
     } else {
       return new GenericDatumReader(writerSchema);
     }
