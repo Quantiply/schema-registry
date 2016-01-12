@@ -132,7 +132,7 @@ public abstract class AbstractKafkaAvroDeserializer extends AbstractKafkaAvroSer
   }
 
   private Schema getReaderSchema(Schema writerSchema) {
-    if (specificAvroReaderClassName == null) {
+    if (specificAvroReaderClassName == null || specificAvroReaderClassName.length() == 0) {
       return getReaderSchemaFromWriterSchemaName(writerSchema);
     }
     return getReaderSchemaFromConfigName();

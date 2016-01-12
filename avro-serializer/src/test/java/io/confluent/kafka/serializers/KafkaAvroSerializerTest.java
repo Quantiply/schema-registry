@@ -183,6 +183,7 @@ public class KafkaAvroSerializerTest {
     assertEquals(avroRecord, fullObj);
 
     Properties props = new Properties();
+    props.setProperty(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "bogus");
     props.setProperty(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true");
     props.setProperty(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CLASS_CONFIG, "io.confluent.kafka.example.User");
     KafkaAvroDecoder specificAvroDecoderWithProjection = new KafkaAvroDecoder(schemaRegistry, new VerifiableProperties(props));

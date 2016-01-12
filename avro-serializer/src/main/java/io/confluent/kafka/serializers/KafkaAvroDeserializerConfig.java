@@ -30,7 +30,7 @@ public class KafkaAvroDeserializerConfig extends AbstractKafkaAvroSerDeConfig {
       "If true, tries to look up the SpecificRecord class ";
 
   public static final String SPECIFIC_AVRO_READER_CLASS_CONFIG = "specific.avro.reader.class";
-  public static final String SPECIFIC_AVRO_READER_CLASS_DEFAULT = null;
+  public static final String SPECIFIC_AVRO_READER_CLASS_DEFAULT = "";
   public static final String SPECIFIC_AVRO_READER_CLASS_DOC =
       "If set, use this class for the SpecificRecord ";
 
