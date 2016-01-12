@@ -15,6 +15,7 @@
  */
 package io.confluent.kafka.serializers;
 
+import io.confluent.kafka.example.ExtendedUser;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -84,6 +85,13 @@ public class KafkaAvroSerializerTest {
 
   private IndexedRecord createSpecificAvroRecord() {
     return User.newBuilder().setName("testUser").build();
+  }
+
+  private IndexedRecord createExtendedSpecificAvroRecord() {
+    return ExtendedUser.newBuilder()
+        .setName("testUser")
+        .setAge(99)
+        .build();
   }
 
   private IndexedRecord createInvalidAvroRecord() {
@@ -159,6 +167,29 @@ public class KafkaAvroSerializerTest {
     obj = specificAvroDeserializer.deserialize(topic, bytes);
     assertTrue("Returned object should be a io.confluent.kafka.example.User", User.class.isInstance(obj));
     assertEquals(avroRecord, obj);
+  }
+
+  @Test
+  public void testKafkaAvroSerializerSpecificRecordWithProjection() {
+    byte[] bytes;
+    Object fullObj;
+    Object projectedObj;
+
+    IndexedRecord avroRecord = createExtendedSpecificAvroRecord();
+    bytes = avroSerializer.serialize(topic, avroRecord);
+
+    fullObj = specificAvroDecoder.fromBytes(bytes);
+    assertTrue("Full object should be a io.confluent.kafka.example.ExtendedUser", ExtendedUser.class.isInstance(fullObj));
+    assertEquals(avroRecord, fullObj);
+
+    Properties props = new Properties();
+    props.setProperty(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true");
+    props.setProperty(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CLASS_CONFIG, "io.confluent.kafka.example.User");
+    KafkaAvroDecoder specificAvroDecoderWithProjection = new KafkaAvroDecoder(schemaRegistry, new VerifiableProperties(props));
+
+    projectedObj = specificAvroDecoderWithProjection.fromBytes(bytes);
+    assertTrue("Projection object should be a io.confluent.kafka.example.User", User.class.isInstance(projectedObj));
+    assertEquals("testUser", ((User)projectedObj).getName().toString());
   }
 
   @Test

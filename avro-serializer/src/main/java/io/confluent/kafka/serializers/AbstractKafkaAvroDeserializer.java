@@ -39,6 +39,7 @@ import kafka.utils.VerifiableProperties;
 public abstract class AbstractKafkaAvroDeserializer extends AbstractKafkaAvroSerDe {
   private final DecoderFactory decoderFactory = DecoderFactory.get();
   protected boolean useSpecificAvroReader = false;
+  protected String specificAvroReaderClassName = null;
   private final Map<String, Schema> readerSchemaCache = new ConcurrentHashMap<String, Schema>();
 
   protected void configure(KafkaAvroDeserializerConfig config) {
@@ -60,6 +61,8 @@ public abstract class AbstractKafkaAvroDeserializer extends AbstractKafkaAvroSer
   protected void configureNonClientProperties(KafkaAvroDeserializerConfig config) {
     useSpecificAvroReader = config
         .getBoolean(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG);
+    specificAvroReaderClassName = config
+        .getString(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CLASS_CONFIG);
   }
 
   protected KafkaAvroDeserializerConfig deserializerConfig(Map<String, ?> props) {
@@ -129,6 +132,29 @@ public abstract class AbstractKafkaAvroDeserializer extends AbstractKafkaAvroSer
   }
 
   private Schema getReaderSchema(Schema writerSchema) {
+    if (specificAvroReaderClassName == null) {
+      return getReaderSchemaFromWriterSchemaName(writerSchema);
+    }
+    return getReaderSchemaFromConfigName();
+  }
+
+  private Schema getReaderSchemaFromConfigName() {
+    try {
+      SpecificRecord record = (SpecificRecord) Class.forName(specificAvroReaderClassName).newInstance();
+      return record.getSchema();
+    } catch (InstantiationException e) {
+      throw new SerializationException(specificAvroReaderClassName + " specified by the " +
+          KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CLASS_CONFIG + " config parameter could not be instantiated.");
+    } catch (ClassNotFoundException e) {
+      throw new SerializationException(specificAvroReaderClassName + " specified by the " +
+          KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CLASS_CONFIG + " config parameter was not found.");
+    } catch (IllegalAccessException e) {
+      throw new SerializationException(specificAvroReaderClassName + " specified by the " +
+          KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CLASS_CONFIG + " config parameter is not allowed to be instantiated.");
+    }
+  }
+
+  private Schema getReaderSchemaFromWriterSchemaName(Schema writerSchema) {
     Schema readerSchema = readerSchemaCache.get(writerSchema.getFullName());
     if (readerSchema == null) {
       Class<SpecificRecord> readerClass = SpecificData.get().getClass(writerSchema);
