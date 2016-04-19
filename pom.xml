@@ -48,7 +48,7 @@
         <kafka.version>0.8.2.0-cp</kafka.version>
         <kafka.scala.version>2.10</kafka.scala.version>
         <log4j.version>1.7.6</log4j.version>
-        <restutils.version>1.0-q2</restutils.version>
+        <restutils.version>1.0-q5</restutils.version>
         <avro.version>1.7.7</avro.version>
         <jackson.version>2.5.4</jackson.version>
         <junit.version>4.12</junit.version>
@@ -56,24 +56,22 @@
     </properties>
 
     <repositories>
-       <repository>
-           <id>aws-release</id>
-           <name>AWS S3 Release Repository</name>
-           <url>https://s3.amazonaws.com/artifacts.quantezza.com/release</url>
-       </repository>
-       <repository>
-           <id>confluent</id>
-           <name>Confluent</name>
-           <url>http://packages.confluent.io/maven/</url>
+      <repository>
+        <id>confluent</id>
+        <url>http://packages.confluent.io/maven/</url>
+      </repository>
+      <repository>
+         <id>bintray</id>
+         <url>http://dl.bintray.com/quantiply/quantiply</url>
        </repository>
     </repositories>
 
     <distributionManagement>
-        <repository>
-            <id>aws-release</id>
-            <name>AWS Release Repository</name>
-            <url>s3://artifacts.quantezza.com/release</url>
-        </repository>
+      <repository>
+        <id>bintray-quantiply-quantiply</id>
+        <name>quantiply-quantiply</name>
+        <url>https://api.bintray.com/maven/quantiply/quantiply/confluent-schema-registry</url>
+      </repository>
     </distributionManagement>
 
     <dependencyManagement>
@@ -89,13 +87,6 @@
     </dependencyManagement>
 
     <build>
-        <extensions>
-            <extension>
-                <groupId>org.kuali.maven.wagons</groupId>
-                <artifactId>maven-s3-wagon</artifactId>
-                <version>1.2.1</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
